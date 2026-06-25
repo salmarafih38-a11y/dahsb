@@ -1,0 +1,1918 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISPITS Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0b0f;
+  --surface: #111318;
+  --surface-2: #181b22;
+  --surface-3: #1e2230;
+  --border: #252a36;
+  --border-light: #2e3545;
+  --text: #e8ecf4;
+  --text-soft: #8892a4;
+  --text-muted: #4a5568;
+  --primary: #4f8ef7;
+  --primary-dim: #1a2d4f;
+  --green: #22d3a0;
+  --green-dim: #0d2e24;
+  --red: #f75c5c;
+  --red-dim: #2e1212;
+  --amber: #f7b94f;
+  --amber-dim: #2e2212;
+  --purple: #a78bfa;
+  --purple-dim: #1e1535;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Syne', sans-serif;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+*::-webkit-scrollbar{width:4px;height:4px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:4px}
+body{font-family:var(--font-mono);background:var(--bg);color:var(--text);display:flex;height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo .logo-mark{font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.sidebar-logo .logo-sub{font-size:10px;color:var(--text-muted);margin-top:2px;letter-spacing:.08em;text-transform:uppercase}
+.sidebar-status{padding:10px 18px;border-bottom:1px solid var(--border);font-size:10px}
+.status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--text-muted);margin-right:6px;transition:background .3s}
+.status-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green)}
+.status-dot.error{background:var(--red)}
+#status-text{color:var(--text-soft)}
+.nav{flex:1;overflow-y:auto;padding:10px 0}
+.nav-section{padding:14px 18px 6px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;font-size:12px;color:var(--text-soft);transition:all .15s;border-left:2px solid transparent;position:relative}
+.nav-item:hover{color:var(--text);background:var(--surface-2)}
+.nav-item.active{color:var(--primary);border-left-color:var(--primary);background:var(--primary-dim)}
+.nav-item .nav-icon{font-size:14px;width:18px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:99px;font-weight:700}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);font-size:10px;color:var(--text-muted)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0}
+.topbar-title{font-family:var(--font-display);font-size:16px;font-weight:700}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* PANELS */
+.panel{display:none}
+.panel.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden}
+.stat-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.blue::before{background:var(--primary)}.stat-card.green::before{background:var(--green)}.stat-card.amber::before{background:var(--amber)}.stat-card.red::before{background:var(--red)}
+.stat-label{font-size:10px;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.stat-value{font-family:var(--font-display);font-size:28px;font-weight:800}
+.stat-value.blue{color:var(--primary)}.stat-value.green{color:var(--green)}.stat-value.amber{color:var(--amber)}.stat-value.red{color:var(--red)}
+.stat-sub{font-size:10px;color:var(--text-muted);margin-top:4px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-sm);border:none;font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.02em}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:#6fa4ff}
+.btn-green{background:var(--green);color:#0a0b0f}.btn-green:hover{background:#34edb5}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#ff7070}
+.btn-amber{background:var(--amber);color:#0a0b0f}.btn-amber:hover{background:#ffd080}
+.btn-ghost{background:var(--surface-3);color:var(--text-soft);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:var(--border-light)}
+.btn-sm{padding:4px 10px;font-size:10px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* TABLES */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.table-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.table-title{font-family:var(--font-display);font-size:13px;font-weight:700}
+.table-search{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;font-family:var(--font-mono);font-size:11px;color:var(--text);width:200px;transition:border-color .2s}
+.table-search:focus{outline:none;border-color:var(--primary)}
+.table-search::placeholder{color:var(--text-muted)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 16px;text-align:left;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);background:var(--surface-2);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface-2)}
+tbody td{padding:11px 16px;font-size:11px;color:var(--text-soft);vertical-align:middle}
+.td-name{color:var(--text);font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.badge-green{background:var(--green-dim);color:var(--green)}.badge-red{background:var(--red-dim);color:var(--red)}.badge-amber{background:var(--amber-dim);color:var(--amber)}.badge-blue{background:var(--primary-dim);color:var(--primary)}.badge-purple{background:var(--purple-dim);color:var(--purple)}.badge-gray{background:var(--surface-3);color:var(--text-soft)}
+
+/* TOGGLE */
+.toggle{position:relative;width:36px;height:20px;cursor:pointer;display:inline-block}
+.toggle input{display:none}
+.toggle-track{position:absolute;inset:0;background:var(--surface-3);border-radius:99px;border:1px solid var(--border);transition:all .2s}
+.toggle input:checked + .toggle-track{background:var(--green);border-color:var(--green)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:12px;height:12px;background:var(--text-muted);border-radius:50%;transition:all .2s}
+.toggle input:checked ~ .toggle-thumb{left:19px;background:#fff}
+
+/* ISSUES */
+.issues-list{display:flex;flex-direction:column;gap:8px}
+.issue-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px}
+.issue-icon{font-size:18px;flex-shrink:0}
+.issue-body{flex:1}
+.issue-title{font-size:12px;color:var(--text);font-weight:600;margin-bottom:3px}
+.issue-desc{font-size:10px;color:var(--text-soft);line-height:1.6}
+.issue-count{font-family:var(--font-display);font-size:20px;font-weight:800;min-width:40px;text-align:right}
+.issue-count.red{color:var(--red)}.issue-count.amber{color:var(--amber)}.issue-count.green{color:var(--green)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease}
+.modal{background:var(--surface);border:1px solid var(--border-light);border-radius:14px;padding:24px;width:100%;max-width:520px;box-shadow:var(--shadow)}
+.modal-title{font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal-close{margin-left:auto;background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;padding:0}
+.modal-close:hover{color:var(--text)}
+.form-row{margin-bottom:12px}
+.form-label{display:block;font-size:10px;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-family:var(--font-mono);font-size:12px;color:var(--text);transition:border-color .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--primary)}
+.form-textarea{min-height:100px;resize:vertical}
+.form-select option{background:var(--surface-2)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+
+/* LOADING */
+.loading-row td{text-align:center;padding:40px !important;color:var(--text-muted)}
+.spinner-sm{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast-container{position:fixed;top:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface-3);border:1px solid var(--border-light);border-radius:var(--radius);padding:10px 16px;font-size:11px;color:var(--text);box-shadow:var(--shadow);animation:toastIn .3s cubic-bezier(.2,.8,.2,1);display:flex;align-items:center;gap:8px;pointer-events:all}
+.toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}.toast.info{border-left:3px solid var(--primary)}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* LOGS */
+.log-entry{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:10px;align-items:flex-start}
+.log-time{color:var(--text-muted);flex-shrink:0;width:130px}
+.log-action{flex-shrink:0;width:70px}
+.log-user{color:var(--text-soft);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* HEALTH */
+.health-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px}
+.health-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.health-card-title{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.health-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px}
+.health-row:last-child{border-bottom:none}
+.health-key{color:var(--text-soft)}.health-val{color:var(--text);font-weight:600}
+
+/* LAYOUT */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-title{font-size:13px;color:var(--text-soft);font-weight:600;margin-bottom:4px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-family:var(--font-display);font-size:14px;font-weight:700}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.full-col{grid-column:1/-1}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-btn{padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--text-soft);font-family:var(--font-mono);font-size:10px;cursor:pointer;transition:all .15s}
+.filter-btn.active{background:var(--primary-dim);color:var(--primary);border-color:var(--primary)}
+.filter-btn:hover:not(.active){border-color:var(--border-light);color:var(--text)}
+
+/* CONFIRM */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}
+.confirm-box{background:var(--surface);border:1px solid var(--red);border-radius:var(--radius);padding:24px;max-width:360px;width:100%;text-align:center}
+.confirm-icon{font-size:36px;margin-bottom:12px}
+.confirm-title{font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:8px}
+.confirm-desc{font-size:11px;color:var(--text-soft);margin-bottom:20px;line-height:1.6}
+.confirm-actions{display:flex;gap:10px;justify-content:center}
+
+@media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* Hamburger - hidden on desktop */
+.menu-toggle{display:none;background:var(--surface-2);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:var(--radius-sm);cursor:pointer;font-size:18px;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90;backdrop-filter:blur(2px)}
+.sidebar-overlay.active{display:block}
+
+@media(max-width:900px){
+  html,body{overflow:auto;height:auto;min-height:100vh}
+  body{display:block;min-height:100vh}
+  .sidebar{position:fixed;top:0;left:0;height:100vh;width:240px;z-index:100;transform:translateX(-100%);transition:transform .25s ease;box-shadow:var(--shadow)}
+  .sidebar.open{transform:translateX(0)}
+  .main{width:100%;min-height:100vh;overflow:visible}
+  .menu-toggle{display:inline-flex}
+  .topbar{padding:12px 14px;position:sticky;top:0;z-index:50;gap:10px}
+  .topbar-title{font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .topbar-actions{gap:6px;flex-shrink:0}
+  .topbar-actions .btn{padding:7px 10px;font-size:11px}
+  .content{padding:14px;overflow:visible}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .section-header{flex-wrap:wrap;gap:10px}
+  .table-header{flex-wrap:wrap;gap:8px;padding:12px}
+  /* Allow tables to scroll horizontally */
+  .table-wrap,.table-container,table{overflow-x:auto;display:block;max-width:100%}
+  table{width:100%;min-width:520px}
+  .modal,.modal-box,.confirm-box{max-width:94vw!important;width:94vw!important}
+  .btn{font-size:11px}
+}
+
+@media(max-width:540px){
+  .stats-grid{grid-template-columns:1fr}
+  .topbar-actions .btn span,.btn-label{display:none}
+  .content{padding:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <div class="logo-mark">ISPITS</div>
+      <button onclick="bombVersion()" title="Increment app version" style="background:var(--red-dim);border:1px solid var(--red);border-radius:var(--radius-sm);color:var(--red);font-size:11px;font-weight:700;padding:3px 8px;cursor:pointer;font-family:var(--font-mono);transition:all .15s" onmouseover="this.style.background='var(--red)';this.style.color='#fff'" onmouseout="this.style.background='var(--red-dim)';this.style.color='var(--red)'">💣 Bomb</button>
+    </div>
+    <div class="logo-sub">Admin Console · v<span id="apk-version">…</span></div>
+  </div>
+  <div class="sidebar-status">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="status-text">Connecting...</span>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showPanel('overview')"><span class="nav-icon">⬡</span><span>Dashboard</span></div>
+    <div class="nav-item" onclick="showPanel('health')"><span class="nav-icon">◈</span><span>Health Check</span><span class="nav-badge" id="health-badge" style="display:none"></span></div>
+    <div class="nav-section">Content</div>
+    <div class="nav-item" onclick="showPanel('exams')"><span class="nav-icon">◧</span><span>Exams</span></div>
+    <div class="nav-item" onclick="showPanel('categories')"><span class="nav-icon">◫</span><span>Categories</span></div>
+    <div class="nav-item" onclick="showPanel('cours')"><span class="nav-icon">◈</span><span>Cours</span></div>
+    <div class="nav-item" onclick="showPanel('courssvt')"><span class="nav-icon">◧</span><span>Cours SVT</span></div>
+    <div class="nav-section">Users</div>
+    <div class="nav-item" onclick="showPanel('users')"><span class="nav-icon">◉</span><span>All Users</span></div>
+    <div class="nav-item" onclick="showPanel('premium')"><span class="nav-icon">◈</span><span>Premium</span></div>
+    <div class="nav-section">System</div>
+    <div class="nav-item" onclick="showPanel('logs')"><span class="nav-icon">◎</span><span>Access Logs</span></div>
+    <div class="nav-item" onclick="showPanel('settings')"><span class="nav-icon">◌</span><span>Settings</span></div>
+    <div class="nav-item" onclick="showPanel('migrate')"><span class="nav-icon">⛁</span><span>Migrate Secure</span></div>
+  </nav>
+  <div class="sidebar-footer">v1.0 · Local Only</div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="refreshAll()">↻ <span class="btn-label">Refresh</span></button>
+      <button class="btn btn-primary" onclick="showPanel('health')"><span class="btn-label">Run </span>Health<span class="btn-label"> Check</span></button>
+    </div>
+  </div>
+  <div class="content" id="content">
+
+    <!-- OVERVIEW -->
+    <div class="panel active" id="panel-overview">
+      <div class="stats-grid">
+        <div class="stat-card blue"><div class="stat-label">Total Users</div><div class="stat-value blue" id="stat-users">—</div><div class="stat-sub">registered accounts</div></div>
+        <div class="stat-card green"><div class="stat-label">Premium Users</div><div class="stat-value green" id="stat-premium">—</div><div class="stat-sub">active subscriptions</div></div>
+        <div class="stat-card amber"><div class="stat-label">Total Exams</div><div class="stat-value amber" id="stat-exams">—</div><div class="stat-sub">in concours collection</div></div>
+        <div class="stat-card red"><div class="stat-label">Issues Found</div><div class="stat-value red" id="stat-issues">—</div><div class="stat-sub">missing fields / problems</div></div>
+      </div>
+      <div class="two-col">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">Recent Users</div><button class="btn btn-ghost btn-sm" onclick="showPanel('users')">View All →</button></div>
+          <table><thead><tr><th>Name</th><th>Status</th><th>Downloads</th></tr></thead><tbody id="recent-users-table"><tr class="loading-row"><td colspan="3"><span class="spinner-sm"></span>Loading...</td></tr></tbody></table>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">Recent Exams</div><button class="btn btn-ghost btn-sm" onclick="showPanel('exams')">View All →</button></div>
+          <table><thead><tr><th>Name</th><th>Category</th><th>Access</th></tr></thead><tbody id="recent-exams-table"><tr class="loading-row"><td colspan="3"><span class="spinner-sm"></span>Loading...</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEALTH CHECK -->
+    <div class="panel" id="panel-health">
+      <div class="section-header"><div class="section-title">Health Check</div><button class="btn btn-primary" onclick="runHealthCheck()">▶ Run Check</button></div>
+      <div class="issues-list" id="issues-list"><div class="empty-state"><div class="empty-icon">◈</div><div class="empty-title">Click "Run Check" to scan your database</div></div></div>
+      <div id="fix-all-wrap" style="display:none;margin-top:16px"><button class="btn btn-amber" onclick="fixAllIssues()">⚡ Fix All Issues Automatically</button></div>
+    </div>
+
+    <!-- EXAMS -->
+    <div class="panel" id="panel-exams">
+      <div class="section-header">
+        <div class="section-title">Exam Management</div>
+        <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="exportExams()">↓ Export</button><button class="btn btn-primary" onclick="openAddExamModal()">+ Add Exam</button></div>
+      </div>
+      <div class="filter-row" id="exam-filters"></div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">All Exams <span id="exam-count" style="color:var(--text-muted);font-size:11px"></span></div>
+          <input class="table-search" placeholder="Search exams..." oninput="filterExams(this.value)" id="exam-search">
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Category</th><th>Access</th><th>Has HTML</th><th>isPremium field</th><th>Actions</th></tr></thead>
+          <tbody id="exams-table"><tr class="loading-row"><td colspan="6"><span class="spinner-sm"></span>Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="panel" id="panel-categories">
+      <div class="section-header"><div class="section-title">Categories</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th>Total Exams</th><th>Free</th><th>Premium</th><th>Missing Fields</th></tr></thead>
+          <tbody id="categories-table"><tr class="loading-row"><td colspan="5"><span class="spinner-sm"></span>Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="panel" id="panel-users">
+      <div class="section-header"><div class="section-title">User Management</div><button class="btn btn-ghost" onclick="exportUsers()">↓ Export CSV</button></div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterUsers('all',this)">All</button>
+        <button class="filter-btn" onclick="filterUsers('premium',this)">Premium</button>
+        <button class="filter-btn" onclick="filterUsers('free',this)">Free</button>
+        <button class="filter-btn" onclick="filterUsers('issues',this)">Has Issues</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">Users <span id="user-count" style="color:var(--text-muted);font-size:11px"></span></div>
+          <input class="table-search" placeholder="Search users..." oninput="filterUsersSearch()">
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Membership</th><th>Downloads</th><th>Issues</th><th>Actions</th></tr></thead>
+          <tbody id="users-table"><tr class="loading-row"><td colspan="7"><span class="spinner-sm"></span>Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PREMIUM -->
+    <div class="panel" id="panel-premium">
+      <div class="section-header"><div class="section-title">Premium Management</div></div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card green"><div class="stat-label">Premium Users</div><div class="stat-value green" id="prem-count">—</div><div class="stat-sub">active</div></div>
+        <div class="stat-card blue"><div class="stat-label">Free Users</div><div class="stat-value blue" id="free-count">—</div><div class="stat-sub">can upgrade</div></div>
+        <div class="stat-card amber"><div class="stat-label">Total Downloads</div><div class="stat-value amber" id="dl-count">—</div><div class="stat-sub">across all users</div></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header"><div class="table-title">Toggle Premium Access</div></div>
+        <table>
+          <thead><tr>
+  <th onclick="sortPremiumBy('name')" style="cursor:pointer">Name ↕</th>
+  <th>Email</th>
+  <th onclick="sortPremiumBy('date')" style="cursor:pointer">Joined ↕</th>
+  <th>Downloads</th>
+  <th>Premium</th>
+  <th>Delete Downloaded</th>
+</tr></thead>
+          <tbody id="premium-table"><tr class="loading-row"><td colspan="5"><span class="spinner-sm"></span>Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COURS -->
+    <div class="panel" id="panel-cours">
+      <div class="section-header">
+        <div class="section-title">Cours Management</div>
+        <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="exportCours()">Export</button><button class="btn btn-primary" onclick="openAddCoursModal()">+ Add Cours</button></div>
+      </div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card blue"><div class="stat-label">Total Cours</div><div class="stat-value blue" id="cours-stat-total">0</div><div class="stat-sub">in coursapk</div></div>
+        <div class="stat-card amber"><div class="stat-label">Premium Cours</div><div class="stat-value amber" id="cours-stat-premium">0</div><div class="stat-sub">locked content</div></div>
+        <div class="stat-card green"><div class="stat-label">Subjects</div><div class="stat-value green" id="cours-stat-subjects">0</div><div class="stat-sub">unique subjects</div></div>
+      </div>
+      <div class="filter-row" id="cours-subject-filters" style="margin-top:14px">
+        <button class="filter-btn active" onclick="filterCoursBySubject(this)">All</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">All Cours <span id="cours-count" style="color:var(--text-muted);font-size:11px"></span></div>
+          <input class="table-search" id="cours-search" placeholder="Search cours..." oninput="filterCoursSearch(this.value)">
+        </div>
+        <table>
+          <thead><tr><th>Title</th><th>Subject</th><th>Code</th><th>Premium</th><th>Actions</th></tr></thead>
+          <tbody id="cours-table"><tr class="loading-row"><td colspan="5"><span class="spinner-sm"></span>Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COURS SVT -->
+    <div class="panel" id="panel-courssvt">
+      <div class="section-header">
+        <div class="section-title">Cours SVT</div>
+        <button class="btn btn-primary" onclick="openAddCoursSVTModal()">+ Add Cours SVT</button>
+      </div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card blue"><div class="stat-label">Total</div><div class="stat-value blue" id="csvt-stat-total">0</div><div class="stat-sub">cours in coursSVT</div></div>
+        <div class="stat-card amber"><div class="stat-label">Premium</div><div class="stat-value amber" id="csvt-stat-premium">0</div><div class="stat-sub">locked content</div></div>
+        <div class="stat-card green"><div class="stat-label">Free</div><div class="stat-value green" id="csvt-stat-free">0</div><div class="stat-sub">accessible to all</div></div>
+      </div>
+      <div id="csvt-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:14px">
+        <div class="loading-row" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted)"><span class="spinner-sm"></span>Loading...</div>
+      </div>
+    </div>
+
+        <!-- LOGS -->
+    <div class="panel" id="panel-logs">
+      <div class="section-header">
+        <div class="section-title">Access Logs</div>
+        <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="loadLogs()">↻ Refresh</button></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header"><div class="table-title">Worker Access Logs (KV)</div><span style="font-size:10px;color:var(--text-muted)">Requires Worker URL in Settings</span></div>
+        <div style="padding:16px" id="logs-content">
+          <div class="empty-state"><div class="empty-icon">◎</div><div class="empty-title">Logs are stored in Cloudflare KV</div><p style="font-size:10px;margin-top:6px">Enter your Worker URL in Settings to fetch logs</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="section-header"><div class="section-title">Configuration</div></div>
+      <div class="two-col">
+        <div class="health-card">
+          <div class="health-card-title">Firebase Connection</div>
+          <div class="health-row"><span class="health-key">Project ID</span><span class="health-val">education1-99974</span></div>
+          <div class="health-row"><span class="health-key">Auth SDK</span><span class="health-val" id="cfg-auth">—</span></div>
+          <div class="health-row"><span class="health-key">Firestore</span><span class="health-val" id="cfg-firestore">—</span></div>
+          <div class="health-row"><span class="health-key">Collections</span><span class="health-val" style="font-size:9px" id="cfg-collections">—</span></div>
+        </div>
+        <div class="health-card">
+          <div class="health-card-title">Worker Settings</div>
+          <div class="form-row" style="margin-top:8px">
+            <label class="form-label">Worker URL</label>
+            <input class="form-input" id="worker-url-input" placeholder="https://ispits-security-worker.xxx.workers.dev">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="saveWorkerUrl()" style="margin-top:4px">Save URL</button>
+        </div>
+        <div class="health-card full-col">
+          <div class="health-card-title">Database Schema Reference</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px">
+            <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">userapk/{uid} — Required Fields</div><div id="schema-users"></div></div>
+            <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">concours/{id} — Required Fields</div><div id="schema-exams"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-migrate">
+      <div class="section-header"><div class="section-title">Migrate to Secure Storage</div></div>
+      <div class="health-card full-col" style="margin-bottom:16px">
+        <div class="health-card-title" style="color:var(--amber)">⚠️ Read this first</div>
+        <div style="font-size:11px;color:var(--text-soft);line-height:1.7;margin-top:8px">
+          This copies the sensitive content fields (<b>htmlCode</b> from <b>concours</b>, <b>courscode</b> from <b>coursapk</b>,
+          and <b>Code</b> from each <b>coursSVT/{id}/contents/{Ar,Fr,Flashcard}</b> doc) into a new hidden
+          <b>secure</b> subcollection under each document.<br><br>
+          <b>This step is 100% safe and reversible:</b> it only reads and copies — it does <b>NOT</b> delete or modify
+          anything in your existing documents. Your dashboard and your live site keep working exactly as they do today,
+          completely unaffected, until you choose to do the cleanup step later (separately, after you've verified
+          everything and updated the Worker).<br><br>
+          You can run this multiple times safely — it overwrites the secure copy each time with the latest content,
+          so re-running it after editing a cours is fine.
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-bottom:16px">
+        <div class="health-card">
+          <div class="health-card-title">Step 1 — Run Migration</div>
+          <div style="font-size:10px;color:var(--text-muted);margin:8px 0 12px">
+            Copies content into <code>secure</code> subcollections. No deletes.
+          </div>
+          <button class="btn btn-primary" id="migrate-run-btn" onclick="runSecureMigration()">▶ Run Migration</button>
+        </div>
+        <div class="health-card">
+          <div class="health-card-title">Progress</div>
+          <div style="font-size:11px;color:var(--text-soft);margin-top:8px" id="migrate-progress">
+            Not started yet.
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-header"><div class="table-title">Migration Log</div></div>
+        <div style="max-height:360px;overflow-y:auto;padding:14px 18px;font-size:11px;line-height:1.8" id="migrate-log">
+          <span style="color:var(--text-muted)" data-placeholder="true">Log output will appear here once you run the migration.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- MODAL: Exam -->
+<div class="modal-overlay" id="modal-exam" style="display:none" onclick="if(event.target===this)closeModal('modal-exam')">
+  <div class="modal">
+    <div class="modal-title"><span id="modal-exam-title">Edit Exam</span><button class="modal-close" onclick="closeModal('modal-exam')">✕</button></div>
+    <input type="hidden" id="modal-exam-id">
+    <div class="form-row"><label class="form-label">Exam Name</label><input class="form-input" id="modal-exam-name" placeholder="e.g. Concours SVT 2023"></div>
+    <div class="form-row"><label class="form-label">Category</label><input class="form-input" id="modal-exam-category" placeholder="e.g. SVT, Grammaire..."></div>
+    <div class="form-row">
+      <label class="form-label">Access Level</label>
+      <select class="form-select" id="modal-exam-premium">
+        <option value="false">Free — accessible to all</option>
+        <option value="true">Premium only — requires subscription</option>
+      </select>
+    </div>
+    <div class="form-row"><label class="form-label">HTML Content <span style="color:var(--text-muted)">(full HTML of the exam)</span></label><textarea class="form-textarea" id="modal-exam-html" placeholder="<html>...</html>" style="min-height:120px;font-size:10px"></textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('modal-exam')">Cancel</button><button class="btn btn-primary" onclick="saveExam()" id="save-exam-btn">Save Exam</button></div>
+  </div>
+</div>
+
+<!-- MODAL: User -->
+<div class="modal-overlay" id="modal-user" style="display:none" onclick="if(event.target===this)closeModal('modal-user')">
+  <div class="modal">
+    <div class="modal-title"><span>Edit User</span><button class="modal-close" onclick="closeModal('modal-user')">✕</button></div>
+    <input type="hidden" id="modal-user-id">
+    <div class="form-row"><label class="form-label">Full Name</label><input class="form-input" id="modal-user-name"></div>
+    <div class="form-row"><label class="form-label">Email</label><input class="form-input" id="modal-user-email" type="email"></div>
+    <div class="form-row"><label class="form-label">Phone</label><input class="form-input" id="modal-user-phone"></div>
+    <div class="form-row">
+      <label class="form-label">Gender</label>
+      <select class="form-select" id="modal-user-gender"><option value="male">Male</option><option value="female">Female</option></select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Membership</label>
+      <select class="form-select" id="modal-user-membership"><option value="free">Free</option><option value="premium">Premium</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-red btn-sm" onclick="clearUserDownloads()" style="margin-right:auto">Clear Downloads</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-user')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUser()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Cours -->
+<div class="modal-overlay" id="modal-cours" style="display:none" onclick="if(event.target===this)closeModal('modal-cours')">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-title"><span id="cours-modal-heading">Add Cours</span><button class="modal-close" onclick="closeModal('modal-cours')">X</button></div>
+    <input type="hidden" id="cours-modal-id">
+    <div class="form-row"><label class="form-label">Title</label><input class="form-input" id="cours-modal-title" placeholder="e.g. Introduction a l anatomie"></div>
+    <div class="form-row"><label class="form-label">Subject</label><input class="form-input" id="cours-modal-subject" placeholder="e.g. Biologie, Anatomie..."></div>
+    <div class="form-row">
+      <label class="form-label">isPremium</label>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+        <label class="toggle"><input type="checkbox" id="cours-modal-premium" onchange="coursUpdatePremiumLabel()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        <span style="font-size:11px;color:var(--text-soft)" id="cours-modal-premium-lbl">Free - accessible to all</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Cours Code</label>
+      <div style="display:flex;margin-bottom:8px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;width:fit-content">
+        <button id="ctab-paste" onclick="switchCoursTab('paste')" style="padding:5px 14px;font-size:10px;border:none;cursor:pointer;background:var(--primary-dim);color:var(--primary)">Paste Code</button>
+        <button id="ctab-upload" onclick="switchCoursTab('upload')" style="padding:5px 14px;font-size:10px;border:none;border-left:1px solid var(--border);cursor:pointer;background:var(--surface-2);color:var(--text-soft)">Upload File</button>
+      </div>
+      <div id="ctab-paste-content">
+        <textarea class="form-textarea" id="cours-modal-code" placeholder="Paste your cours code here..." style="min-height:130px;font-size:10px"></textarea>
+      </div>
+      <div id="ctab-upload-content" style="display:none">
+        <div id="cours-dropzone" ondragover="event.preventDefault();this.style.borderColor='var(--primary)'" ondragleave="this.style.borderColor='var(--border-light)'" ondrop="handleCoursFileDrop(event)" style="border:2px dashed var(--border-light);border-radius:var(--radius-sm);padding:28px;text-align:center;transition:border-color .2s">
+          <div style="font-size:22px;margin-bottom:8px">File</div>
+          <div style="font-size:11px;color:var(--text-soft);margin-bottom:6px">Drag and drop a file here</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px">.html .htm .txt .js .dart .json .xml .css .md</div>
+          <input type="file" id="cours-file-input" style="display:none" accept=".html,.htm,.txt,.js,.dart,.json,.xml,.css,.md" onchange="handleCoursFileSelect(this)">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('cours-file-input').click()">Choose File</button>
+        </div>
+        <div id="cours-file-status" style="margin-top:8px;font-size:10px;color:var(--text-soft)"></div>
+      </div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('modal-cours')">Cancel</button><button class="btn btn-primary" id="cours-save-btn" onclick="saveCours()">Save Cours</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Add/Edit Cours SVT -->
+<div class="modal-overlay" id="modal-csvt-add" style="display:none" onclick="if(event.target===this)closeModal('modal-csvt-add')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title"><span id="csvt-add-heading">Add Cours SVT</span><button class="modal-close" onclick="closeModal('modal-csvt-add')">✕</button></div>
+    <input type="hidden" id="csvt-add-id">
+    <div class="form-row"><label class="form-label">Title</label><input class="form-input" id="csvt-add-title" placeholder="e.g. La Mitose"></div>
+    <div class="form-row">
+      <label class="form-label">isPremium</label>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+        <label class="toggle"><input type="checkbox" id="csvt-add-premium" onchange="csvtUpdatePremiumLabel()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        <span style="font-size:11px;color:var(--text-soft)" id="csvt-add-premium-lbl">Free - accessible to all</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-csvt-add')">Cancel</button>
+      <button class="btn btn-primary" id="csvt-add-save-btn" onclick="saveCoursSVT()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Cours SVT Code Editor (Ar / Flashcard / Fr) -->
+<div class="modal-overlay" id="modal-csvt-code" style="display:none" onclick="if(event.target===this)closeModal('modal-csvt-code')">
+  <div class="modal" style="max-width:660px">
+    <div class="modal-title">
+      <span id="csvt-code-heading">Edit Code</span>
+      <span id="csvt-code-tab-label" style="margin-left:8px;font-size:11px;color:var(--text-muted)"></span>
+      <button class="modal-close" onclick="closeModal('modal-csvt-code')">✕</button>
+    </div>
+    <input type="hidden" id="csvt-code-doc-id">
+    <input type="hidden" id="csvt-code-tab">
+    <!-- Paste / Upload tabs -->
+    <div style="display:flex;margin-bottom:10px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;width:fit-content">
+      <button id="csvt-ctab-paste" onclick="switchCsvtTab('paste')" style="padding:5px 14px;font-size:10px;border:none;cursor:pointer;background:var(--primary-dim);color:var(--primary)">Paste Code</button>
+      <button id="csvt-ctab-upload" onclick="switchCsvtTab('upload')" style="padding:5px 14px;font-size:10px;border:none;border-left:1px solid var(--border);cursor:pointer;background:var(--surface-2);color:var(--text-soft)">Upload File</button>
+    </div>
+    <div id="csvt-paste-content">
+      <textarea class="form-textarea" id="csvt-code-area" placeholder="Paste your code here..." style="min-height:200px;font-size:10px"></textarea>
+    </div>
+    <div id="csvt-upload-content" style="display:none">
+      <div id="csvt-dropzone" ondragover="event.preventDefault();this.style.borderColor='var(--primary)'" ondragleave="this.style.borderColor='var(--border-light)'" ondrop="handleCsvtFileDrop(event)" style="border:2px dashed var(--border-light);border-radius:var(--radius-sm);padding:28px;text-align:center;transition:border-color .2s">
+        <div style="font-size:22px;margin-bottom:8px">File</div>
+        <div style="font-size:11px;color:var(--text-soft);margin-bottom:6px">Drag and drop a file here</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px">.html .htm .txt .js .dart .json .xml .css .md</div>
+        <input type="file" id="csvt-file-input" style="display:none" accept=".html,.htm,.txt,.js,.dart,.json,.xml,.css,.md" onchange="handleCsvtFileSelect(this)">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('csvt-file-input').click()">Choose File</button>
+      </div>
+      <div id="csvt-file-status" style="margin-top:8px;font-size:10px;color:var(--text-soft)"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-csvt-code')">Cancel</button>
+      <button class="btn btn-primary" id="csvt-code-save-btn" onclick="saveCoursSVTCode()">Save Code</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyA0Atjr1xSlZWVnQmZdhv9h4s0lwpcfiF8",
+  authDomain: "education1-99974.firebaseapp.com",
+  projectId: "education1-99974",
+  storageBucket: "education1-99974.firebasestorage.app",
+  messagingSenderId: "233188333156",
+  appId: "1:233188333156:android:0ae3b6f54e4503ac977171"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+const REQUIRED_USER_FIELDS = ['nom','email','telephone','genre','membership','downloads','createdAt'];
+const REQUIRED_EXAM_FIELDS = ['exam','category','htmlCode','isPremium'];
+
+let allUsers = [];
+let allExams = [];
+let allCours = [];
+let activeUserFilter = 'all';
+let activeExamCat = '';
+let activeExamSearch = '';
+let activeCoursSub = '';
+let activeCoursQ = '';
+let workerUrl = localStorage.getItem('workerUrl') || 'https://ispits-security-worker.ispits-ide-cour.workers.dev';
+
+window.addEventListener('load', async () => {
+  document.getElementById('worker-url-input').value = workerUrl;
+  renderSchema();
+  await loadApkVersion();
+  try { await auth.signInWithEmailAndPassword('testlk89@test.com', 'testlk89@test.com'); } catch(e) { console.warn('Auth:', e.message); }
+  await new Promise(r => {
+    const unsub = auth.onAuthStateChanged(user => {
+      if (user) { unsub(); r(); }
+    });
+    setTimeout(r, 5000);
+  });
+  await connectFirebase();
+  await loadAll();
+});
+
+
+
+async function connectFirebase() {
+  try {
+    await db.collection('userapk').limit(1).get();
+    setStatus('connected', 'Connected');
+    document.getElementById('cfg-auth').textContent = auth.currentUser ? `✓ UID: ${auth.currentUser.uid.slice(0,8)}…` : 'No auth';
+    document.getElementById('cfg-firestore').textContent = 'OK';
+    document.getElementById('cfg-collections').textContent = 'userapk · concours · chatbot_content';
+  } catch(e) {
+    setStatus('error', 'Failed');
+    // Provide a clearer error — most common cause is Firestore security rules
+    const hint = e.code === 'permission-denied'
+      ? 'Permission denied — check Firestore security rules (requires auth or public read)'
+      : e.message;
+    toast('Firebase connection failed: ' + hint, 'error');
+    document.getElementById('cfg-firestore').textContent = '✗ ' + (e.code || 'error');
+  }
+}
+
+function setStatus(type, text) {
+  document.getElementById('statusDot').className = 'status-dot ' + type;
+  document.getElementById('status-text').textContent = text;
+}
+
+async function loadAll() {
+  await Promise.all([loadUsers(), loadExams(), loadCours(), loadCoursSVT()]);
+  updateOverview();
+}
+
+async function refreshAll() {
+  toast('Refreshing...', 'info');
+  await loadAll();
+  toast('Data refreshed', 'success');
+}
+
+async function loadUsers() {
+  try {
+    const snap = await db.collection('userapk').get();
+    allUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderUsersTable();
+    renderPremiumTable();
+  } catch(e) {
+    const msg = e.code === 'permission-denied'
+      ? 'Users: Permission denied — Firestore rules block this read. Add anonymous auth rule or make collection readable.'
+      : 'Failed to load users: ' + e.message;
+    toast(msg, 'error');
+    // Clear loading spinner so the table doesn't stay stuck
+    const tbody = document.getElementById('users-table');
+    if (tbody) tbody.innerHTML = `<tr class="loading-row"><td colspan="7" style="color:var(--red)">⚠ ${msg}</td></tr>`;
+    const premTbody = document.getElementById('premium-table');
+    if (premTbody) premTbody.innerHTML = `<tr class="loading-row"><td colspan="5" style="color:var(--red)">⚠ Could not load users</td></tr>`;
+  }
+}
+
+async function loadExams() {
+  try {
+    const snap = await db.collection('concours').get();
+    allExams = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderExamsTable();
+    renderCategoriesTable();
+    renderExamFilters();
+  } catch(e) {
+    const msg = e.code === 'permission-denied'
+      ? 'Exams: Permission denied — Firestore rules block this read.'
+      : 'Failed to load exams: ' + e.message;
+    toast(msg, 'error');
+    const tbody = document.getElementById('exams-table');
+    if (tbody) tbody.innerHTML = `<tr class="loading-row"><td colspan="6" style="color:var(--red)">⚠ ${msg}</td></tr>`;
+  }
+}
+
+function updateOverview() {
+  const premium = allUsers.filter(u => u.membership === 'premium').length;
+  const issues = countAllIssues();
+  document.getElementById('stat-users').textContent = allUsers.length;
+  document.getElementById('stat-premium').textContent = premium;
+  document.getElementById('stat-exams').textContent = allExams.length;
+  document.getElementById('stat-issues').textContent = issues;
+
+  const recentUsers = allUsers.slice(-5).reverse();
+  document.getElementById('recent-users-table').innerHTML = recentUsers.length
+    ? recentUsers.map(u => `<tr><td class="td-name">${u.nom||'<span style="color:var(--text-muted)">—</span>'}</td><td><span class="badge ${u.membership==='premium'?'badge-amber':'badge-gray'}">${u.membership||'free'}</span></td><td>${(u.downloads||[]).length}</td></tr>`).join('')
+    : '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px">No users yet</td></tr>';
+
+  const recentExams = allExams.slice(-5).reverse();
+  document.getElementById('recent-exams-table').innerHTML = recentExams.length
+    ? recentExams.map(e => `<tr><td class="td-name">${e.exam||'—'}</td><td style="font-size:10px;color:var(--text-soft)">${e.category||'—'}</td><td><span class="badge ${e.isPremium?'badge-amber':'badge-green'}">${e.isPremium?'Premium':'Free'}</span></td></tr>`).join('')
+    : '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px">No exams yet</td></tr>';
+}
+
+function countAllIssues() {
+  let count = 0;
+  allUsers.forEach(u => REQUIRED_USER_FIELDS.forEach(f => { if(u[f]===undefined||u[f]===null||u[f]==='') count++; }));
+  allExams.forEach(e => REQUIRED_EXAM_FIELDS.forEach(f => { if(e[f]===undefined||e[f]===null) count++; }));
+  return count;
+}
+
+// ---- USERS TABLE ----
+function renderUsersTable() {
+  const filtered = getFilteredUsers();
+  document.getElementById('user-count').textContent = `(${filtered.length}/${allUsers.length})`;
+  const tbody = document.getElementById('users-table');
+  if (!filtered.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="7">No users found</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(u => {
+    const missing = REQUIRED_USER_FIELDS.filter(f => u[f]===undefined||u[f]===null||u[f]==='');
+    return `<tr>
+      <td class="td-name">${u.nom||'<span style="color:var(--text-muted)">—</span>'}</td>
+      <td style="font-size:10px;color:var(--text-soft);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.email||'—'}</td>
+      <td style="font-size:10px">${u.telephone||'—'}</td>
+      <td><span class="badge ${u.membership==='premium'?'badge-amber':'badge-gray'}">${u.membership||'free'}</span></td>
+      <td>${(u.downloads||[]).length}</td>
+      <td>${missing.length ? `<span class="badge badge-red">${missing.length} missing</span>` : '<span class="badge badge-green">OK</span>'}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-sm" onclick="openEditUser('${u.id}')">Edit</button>
+        <button class="btn ${u.membership==='premium'?'btn-ghost':'btn-amber'} btn-sm" onclick="togglePremium('${u.id}','${u.membership}')">${u.membership==='premium'?'Revoke':'Grant'}</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function getFilteredUsers() {
+  let users = [...allUsers];
+  const search = document.querySelector('#panel-users .table-search')?.value?.toLowerCase()||'';
+  if (search) users = users.filter(u => (u.nom||'').toLowerCase().includes(search)||(u.email||'').toLowerCase().includes(search)||(u.telephone||'').includes(search));
+  if (activeUserFilter==='premium') users = users.filter(u=>u.membership==='premium');
+  if (activeUserFilter==='free') users = users.filter(u=>u.membership!=='premium');
+  if (activeUserFilter==='issues') users = users.filter(u=>REQUIRED_USER_FIELDS.some(f=>u[f]===undefined||u[f]===null||u[f]===''));
+  return users;
+}
+
+function filterUsers(type, btn) {
+  activeUserFilter = type;
+  document.querySelectorAll('#panel-users .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderUsersTable();
+}
+
+function filterUsersSearch() { renderUsersTable(); }
+
+// ---- EXAMS TABLE ----
+function renderExamFilters() {
+  const cats = [...new Set(allExams.map(e=>e.category).filter(Boolean))];
+  document.getElementById('exam-filters').innerHTML =
+    `<button class="filter-btn active" onclick="filterExamsCat('',this)">All</button>` +
+    cats.map(c=>`<button class="filter-btn" onclick="filterExamsCat('${c}',this)">${c}</button>`).join('');
+}
+
+function filterExamsCat(cat, btn) {
+  activeExamCat = cat;
+  document.querySelectorAll('#exam-filters .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderExamsTable();
+}
+
+function filterExams(val) { activeExamSearch = val; renderExamsTable(); }
+
+function renderExamsTable() {
+  let exams = [...allExams];
+  if (activeExamCat) exams = exams.filter(e=>e.category===activeExamCat);
+  if (activeExamSearch) exams = exams.filter(e=>(e.exam||'').toLowerCase().includes(activeExamSearch.toLowerCase())||(e.category||'').toLowerCase().includes(activeExamSearch.toLowerCase()));
+  document.getElementById('exam-count').textContent = `(${exams.length}/${allExams.length})`;
+  const tbody = document.getElementById('exams-table');
+  if (!exams.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="6">No exams found</td></tr>'; return; }
+  tbody.innerHTML = exams.map(e => `<tr>
+    <td class="td-name">${e.exam||'<span style="color:var(--text-muted)">—</span>'}</td>
+    <td style="font-size:10px;color:var(--text-soft)">${e.category||'—'}</td>
+    <td><span class="badge ${e.isPremium?'badge-amber':'badge-green'}">${e.isPremium?'Premium':'Free'}</span></td>
+    <td>${e.htmlCode ? '<span class="badge badge-green">Yes</span>' : '<span class="badge badge-red">Missing</span>'}</td>
+    <td>${e.isPremium!==undefined ? '<span class="badge badge-green">Set</span>' : '<span class="badge badge-red">Missing</span>'}</td>
+    <td><div style="display:flex;gap:4px">
+      <button class="btn btn-ghost btn-sm" onclick="openEditExam('${e.id}')">Edit</button>
+      <button class="btn ${e.isPremium?'btn-ghost':'btn-amber'} btn-sm" onclick="toggleExamPremium('${e.id}',${!!e.isPremium})">${e.isPremium?'Set Free':'Set Premium'}</button>
+      <button class="btn btn-red btn-sm" onclick="deleteExamById('${e.id}')">Del</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+// ---- CATEGORIES TABLE ----
+function renderCategoriesTable() {
+  const cats = {};
+  allExams.forEach(e => {
+    const c = e.category||'Unknown';
+    if (!cats[c]) cats[c]={total:0,free:0,premium:0,missing:0};
+    cats[c].total++;
+    if (e.isPremium) cats[c].premium++; else cats[c].free++;
+    cats[c].missing += REQUIRED_EXAM_FIELDS.filter(f=>e[f]===undefined||e[f]===null).length;
+  });
+  const tbody = document.getElementById('categories-table');
+  const entries = Object.entries(cats);
+  if (!entries.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="5">No categories</td></tr>'; return; }
+  tbody.innerHTML = entries.map(([cat,info])=>`<tr>
+    <td class="td-name">${cat}</td><td>${info.total}</td>
+    <td><span class="badge badge-green">${info.free}</span></td>
+    <td><span class="badge badge-amber">${info.premium}</span></td>
+    <td>${info.missing?`<span class="badge badge-red">${info.missing} fields</span>`:'<span class="badge badge-green">Clean</span>'}</td>
+  </tr>`).join('');
+}
+
+// ---- PREMIUM TABLE ----
+let premiumSortField = 'date';
+let premiumSortDir = -1; // -1 = desc, 1 = asc
+
+function sortPremiumBy(field) {
+  if (premiumSortField === field) premiumSortDir *= -1;
+  else { premiumSortField = field; premiumSortDir = -1; }
+  renderPremiumTable();
+}
+
+function renderPremiumTable() {
+  const premiumCount = allUsers.filter(u=>u.membership==='premium').length;
+  const freeCount = allUsers.length - premiumCount;
+  const dlCount = allUsers.reduce((s,u)=>s+(u.downloads||[]).length,0);
+  document.getElementById('prem-count').textContent = premiumCount;
+  document.getElementById('free-count').textContent = freeCount;
+  document.getElementById('dl-count').textContent = dlCount;
+  const sorted = [...allUsers].sort((a,b) => {
+    if (premiumSortField === 'date') {
+      const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+      const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+      return (ta - tb) * premiumSortDir;
+    } else {
+      return ((a.nom||'').localeCompare(b.nom||'')) * premiumSortDir;
+    }
+  });
+  document.getElementById('premium-table').innerHTML = sorted.map(u=>`<tr>
+    <td class="td-name">${u.nom||'—'}</td>
+    <td style="font-size:10px;color:var(--text-soft)">${u.email||'—'}</td>
+    <td style="font-size:10px;color:var(--text-muted)">${u.createdAt?.toDate?u.createdAt.toDate().toLocaleDateString('fr-FR'):'—'}</td>
+    <td>${(u.downloads||[]).length}</td>
+    <td><label class="toggle"><input type="checkbox" ${u.membership==='premium'?'checked':''} onchange="togglePremium('${u.id}','${u.membership}')"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></td>
+    <td><button class="btn btn-red btn-sm" onclick="clearDownloadedOnDevice('${u.id}')">🗑 Clear</button></td>
+  </tr>`).join('');
+}
+
+async function clearDownloadedOnDevice(userId) {
+  if (!confirm('Set downloadedOnDevice to null for this user?')) return;
+  try {
+    await db.collection('userapk').doc(userId).update({ downloadedOnDevice: null });
+    toast('downloadedOnDevice cleared', 'success');
+  } catch(e) {
+    toast('Failed: ' + e.message, 'error');
+  }
+}
+
+// ---- HEALTH CHECK ----
+async function runHealthCheck() {
+  const list = document.getElementById('issues-list');
+  list.innerHTML = '<div class="empty-state"><span class="spinner-sm"></span> Scanning database...</div>';
+  document.getElementById('fix-all-wrap').style.display = 'none';
+  await loadAll();
+  const issues = [];
+
+  const usersWithMissing = allUsers.filter(u=>REQUIRED_USER_FIELDS.some(f=>u[f]===undefined||u[f]===null||u[f]===''));
+  if (usersWithMissing.length) {
+    const details = usersWithMissing.map(u=>{
+      const m = REQUIRED_USER_FIELDS.filter(f=>u[f]===undefined||u[f]===null||u[f]==='');
+      return `${u.nom||u.email||u.id}: [${m.join(', ')}]`;
+    }).join('<br>');
+    issues.push({icon:'👤',title:`${usersWithMissing.length} users have missing fields`,desc:details,count:usersWithMissing.length,color:'red',fix:()=>fixUserFields(usersWithMissing)});
+  }
+
+  const noMembership = allUsers.filter(u=>u.membership===undefined||u.membership===null);
+  if (noMembership.length) issues.push({icon:'🔑',title:`${noMembership.length} users missing "membership" field`,desc:'Will be set to "free" automatically',count:noMembership.length,color:'red',fix:()=>fixMembership(noMembership)});
+
+  const noDownloads = allUsers.filter(u=>!Array.isArray(u.downloads));
+  if (noDownloads.length) issues.push({icon:'📥',title:`${noDownloads.length} users missing "downloads" array`,desc:'Will be initialized to empty array []',count:noDownloads.length,color:'amber',fix:()=>fixDownloadsArray(noDownloads)});
+
+  const noIsPremium = allExams.filter(e=>e.isPremium===undefined||e.isPremium===null);
+  if (noIsPremium.length) issues.push({icon:'👑',title:`${noIsPremium.length} exams missing "isPremium" field`,desc:'CRITICAL — Worker defaults to free. Will be added as false (free).',count:noIsPremium.length,color:'red',fix:()=>fixIsPremium(noIsPremium)});
+
+  const noHtml = allExams.filter(e=>!e.htmlCode);
+  if (noHtml.length) issues.push({icon:'📄',title:`${noHtml.length} exams missing HTML content`,desc:noHtml.map(e=>e.exam||e.id).slice(0,5).join(', ')+(noHtml.length>5?'...':''),count:noHtml.length,color:'amber',fix:null});
+
+  const noName = allExams.filter(e=>!e.exam);
+  if (noName.length) issues.push({icon:'🏷️',title:`${noName.length} exams missing name field`,desc:'These show as "—" in the app',count:noName.length,color:'amber',fix:null});
+
+  const noCat = allExams.filter(e=>!e.category);
+  if (noCat.length) issues.push({icon:'📂',title:`${noCat.length} exams missing "category" field`,desc:'These won\'t appear in any category list. Will be set to "Unknown".',count:noCat.length,color:'amber',fix:()=>fixCategory(noCat)});
+
+  if (!issues.length) {
+    list.innerHTML = `<div class="issue-item"><div class="issue-icon">✅</div><div class="issue-body"><div class="issue-title">All checks passed!</div><div class="issue-desc">No missing fields. Your database is healthy.</div></div></div>`;
+    document.getElementById('health-badge').style.display='none';
+    document.getElementById('stat-issues').textContent='0';
+    return;
+  }
+
+  const total = issues.reduce((s,i)=>s+i.count,0);
+  document.getElementById('health-badge').style.display='inline';
+  document.getElementById('health-badge').textContent=total;
+  document.getElementById('stat-issues').textContent=total;
+
+  list.innerHTML = issues.map((issue,idx)=>`
+    <div class="issue-item">
+      <div class="issue-icon">${issue.icon}</div>
+      <div class="issue-body"><div class="issue-title">${issue.title}</div><div class="issue-desc">${issue.desc}</div></div>
+      <div class="issue-count ${issue.color}">${issue.count}</div>
+      ${issue.fix?`<button class="btn btn-amber btn-sm" onclick="runFix(${idx})">Fix</button>`:`<button class="btn btn-ghost btn-sm" disabled title="Edit manually">Manual</button>`}
+    </div>`).join('');
+
+  window._issues = issues;
+  if (issues.some(i=>i.fix)) document.getElementById('fix-all-wrap').style.display='block';
+}
+
+window._issues = [];
+async function runFix(idx) { await window._issues[idx].fix(); toast('Fix applied','success'); await runHealthCheck(); }
+async function fixAllIssues() {
+  const fixable = window._issues.filter(i=>i.fix);
+  for (const issue of fixable) await issue.fix();
+  toast(`Applied ${fixable.length} fixes successfully`,'success');
+  await runHealthCheck();
+}
+
+async function fixUserFields(users) {
+  const batch = db.batch();
+  users.forEach(u=>{
+    const ref = db.collection('userapk').doc(u.id);
+    const missing={};
+    REQUIRED_USER_FIELDS.forEach(f=>{
+      if(u[f]===undefined||u[f]===null||u[f]===''){
+        if(f==='downloads') missing[f]=[];
+        else if(f==='membership') missing[f]='free';
+        else if(f==='createdAt') missing[f]=firebase.firestore.FieldValue.serverTimestamp();
+        else missing[f]='';
+      }
+    });
+    batch.update(ref,missing);
+  });
+  await batch.commit(); await loadUsers();
+}
+async function fixMembership(users) {
+  const batch=db.batch();
+  users.forEach(u=>batch.update(db.collection('userapk').doc(u.id),{membership:'free'}));
+  await batch.commit(); await loadUsers();
+}
+async function fixDownloadsArray(users) {
+  const batch=db.batch();
+  users.forEach(u=>batch.update(db.collection('userapk').doc(u.id),{downloads:[]}));
+  await batch.commit(); await loadUsers();
+}
+async function fixIsPremium(exams) {
+  const batch=db.batch();
+  exams.forEach(e=>batch.update(db.collection('concours').doc(e.id),{isPremium:false}));
+  await batch.commit(); await loadExams();
+}
+async function fixCategory(exams) {
+  const batch=db.batch();
+  exams.forEach(e=>batch.update(db.collection('concours').doc(e.id),{category:'Unknown'}));
+  await batch.commit(); await loadExams();
+}
+
+// ---- TOGGLE PREMIUM ----
+async function togglePremium(uid, currentMembership) {
+  const newVal = currentMembership==='premium'?'free':'premium';
+  try {
+    await db.collection('userapk').doc(uid).update({membership:newVal});
+    const u=allUsers.find(u=>u.id===uid);
+    if(u) u.membership=newVal;
+    renderUsersTable(); renderPremiumTable(); updateOverview();
+    toast(`User ${newVal==='premium'?'upgraded to Premium':'downgraded to Free'}`,'success');
+  } catch(e){toast('Failed: '+e.message,'error');}
+}
+
+async function toggleExamPremium(id, currentVal) {
+  const newVal=!currentVal;
+  try {
+    await db.collection('concours').doc(id).update({isPremium:newVal});
+    const e=allExams.find(e=>e.id===id);
+    if(e) e.isPremium=newVal;
+    renderExamsTable(); updateOverview();
+    toast(`Exam set to ${newVal?'Premium':'Free'}`,'success');
+  } catch(e){toast('Failed: '+e.message,'error');}
+}
+
+// ---- EDIT USER ----
+function openEditUser(uid) {
+  const u=allUsers.find(u=>u.id===uid); if(!u)return;
+  document.getElementById('modal-user-id').value=uid;
+  document.getElementById('modal-user-name').value=u.nom||'';
+  document.getElementById('modal-user-email').value=u.email||'';
+  document.getElementById('modal-user-phone').value=u.telephone||'';
+  document.getElementById('modal-user-gender').value=u.genre||'male';
+  document.getElementById('modal-user-membership').value=u.membership||'free';
+  document.getElementById('modal-user').style.display='flex';
+}
+
+async function saveUser() {
+  const uid=document.getElementById('modal-user-id').value;
+  const data={
+    nom:document.getElementById('modal-user-name').value,
+    email:document.getElementById('modal-user-email').value,
+    telephone:document.getElementById('modal-user-phone').value,
+    genre:document.getElementById('modal-user-gender').value,
+    membership:document.getElementById('modal-user-membership').value,
+  };
+  try {
+    await db.collection('userapk').doc(uid).update(data);
+    const idx=allUsers.findIndex(u=>u.id===uid);
+    if(idx!==-1) allUsers[idx]={...allUsers[idx],...data};
+    closeModal('modal-user'); renderUsersTable(); renderPremiumTable(); updateOverview();
+    toast('User saved','success');
+  } catch(e){toast('Failed: '+e.message,'error');}
+}
+
+async function clearUserDownloads() {
+  const uid=document.getElementById('modal-user-id').value;
+  showConfirm('Clear all downloads?','This removes all saved exams for this user from Firestore.',async()=>{
+    try {
+      await db.collection('userapk').doc(uid).update({downloads:[]});
+      const idx=allUsers.findIndex(u=>u.id===uid);
+      if(idx!==-1) allUsers[idx].downloads=[];
+      closeModal('modal-user'); renderUsersTable(); renderPremiumTable();
+      toast('Downloads cleared','success');
+    } catch(e){toast('Failed: '+e.message,'error');}
+  });
+}
+
+// ---- EDIT EXAM ----
+function openAddExamModal() {
+  document.getElementById('modal-exam-title').textContent='Add New Exam';
+  document.getElementById('modal-exam-id').value='';
+  document.getElementById('modal-exam-name').value='';
+  document.getElementById('modal-exam-category').value='';
+  document.getElementById('modal-exam-premium').value='false';
+  document.getElementById('modal-exam-html').value='';
+  document.getElementById('modal-exam').style.display='flex';
+}
+
+async function openEditExam(id) {
+  const e=allExams.find(e=>e.id===id); if(!e)return;
+  document.getElementById('modal-exam-title').textContent='Edit Exam';
+  document.getElementById('modal-exam-id').value=id;
+  document.getElementById('modal-exam-name').value=e.exam||'';
+  document.getElementById('modal-exam-category').value=e.category||'';
+  document.getElementById('modal-exam-premium').value=String(!!e.isPremium);
+  document.getElementById('modal-exam-html').value='Loading...';
+  document.getElementById('modal-exam').style.display='flex';
+  // Content lives in the secure subcollection now, not on the parent doc
+  try {
+    const secSnap = await db.collection('concours').doc(id).collection('secure').doc('main').get();
+    document.getElementById('modal-exam-html').value = secSnap.exists ? (secSnap.data().content || '') : '';
+  } catch(err) {
+    document.getElementById('modal-exam-html').value = '';
+    toast('Could not load existing content: '+err.message,'error');
+  }
+}
+
+async function saveExam() {
+  const id=document.getElementById('modal-exam-id').value;
+  const htmlCode=document.getElementById('modal-exam-html').value;
+  const data={
+    exam:document.getElementById('modal-exam-name').value,
+    category:document.getElementById('modal-exam-category').value,
+    isPremium:document.getElementById('modal-exam-premium').value==='true',
+  };
+  if(!data.exam||!data.category){toast('Name and category required','error');return;}
+  const btn=document.getElementById('save-exam-btn');
+  btn.disabled=true; btn.textContent='Saving...';
+  try {
+    let docId = id;
+    if(id){
+      await db.collection('concours').doc(id).update(data);
+    } else {
+      const ref=await db.collection('concours').add(data);
+      docId = ref.id;
+    }
+    // Content always goes to the secure subcollection, never the parent doc.
+    // merge:true is essential here — without it, saving htmlCode through
+    // this dashboard would silently wipe out questionsJson on the same
+    // secure/main doc, since this form has no field for it and would
+    // otherwise overwrite the whole document with just {content: ...}.
+    await db.collection('concours').doc(docId).collection('secure').doc('main').set({content: htmlCode}, {merge: true});
+
+    if(id){
+      const idx=allExams.findIndex(e=>e.id===id);
+      if(idx!==-1) allExams[idx]={...allExams[idx],...data, htmlCode};
+      toast('Exam updated','success');
+    } else {
+      allExams.push({id:docId,...data, htmlCode});
+      toast('Exam added','success');
+    }
+    closeModal('modal-exam');
+    renderExamsTable(); renderCategoriesTable(); renderExamFilters(); updateOverview();
+  } catch(e){toast('Failed: '+e.message,'error');}
+  btn.disabled=false; btn.textContent='Save Exam';
+}
+
+function deleteExamById(id) {
+  const e = allExams.find(e => e.id === id);
+  deleteExam(id, e ? (e.exam || id) : id);
+}
+
+async function deleteExam(id, name) {
+  showConfirm(`Delete "${name}"?`,'This permanently removes this exam from Firestore. Cannot be undone.',async()=>{
+    try {
+      // Delete the secure content doc first, then the parent
+      try { await db.collection('concours').doc(id).collection('secure').doc('main').delete(); } catch(e){}
+      await db.collection('concours').doc(id).delete();
+      allExams=allExams.filter(e=>e.id!==id);
+      renderExamsTable(); renderCategoriesTable(); renderExamFilters(); updateOverview();
+      toast('Exam deleted','success');
+    } catch(e){toast('Delete failed: '+e.message,'error');}
+  });
+}
+
+// ---- EXPORT ----
+function exportUsers() {
+  const rows=[['ID','Name','Email','Phone','Gender','Membership','Downloads']];
+  allUsers.forEach(u=>rows.push([u.id,u.nom||'',u.email||'',u.telephone||'',u.genre||'',u.membership||'',(u.downloads||[]).length]));
+  downloadCSV(rows,'ispits_users.csv'); toast('CSV exported','success');
+}
+function exportExams() {
+  const rows=[['ID','Name','Category','isPremium','Has HTML']];
+  allExams.forEach(e=>rows.push([e.id,e.exam||'',e.category||'',e.isPremium||false,!!e.htmlCode]));
+  downloadCSV(rows,'ispits_exams.csv'); toast('CSV exported','success');
+}
+function downloadCSV(rows,filename) {
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=filename; a.click();
+}
+
+// ============================================================
+//  SECURE MIGRATION — copies sensitive content fields into a
+//  hidden "secure" subcollection under each document.
+//  READ + WRITE (create new secure docs) ONLY.
+//  Never deletes or modifies the original documents/fields.
+//  Safe to re-run any time (overwrites the secure copy with
+//  the latest content each time, e.g. after you edit a cours).
+// ============================================================
+
+function migrateLog(message, type) {
+  const el = document.getElementById('migrate-log');
+  if (!el) return;
+  if (el.querySelector('span[data-placeholder]')) el.innerHTML = '';
+  const color = type === 'error' ? 'var(--red)' : type === 'success' ? 'var(--green)' : type === 'warn' ? 'var(--amber)' : 'var(--text-soft)';
+  const line = document.createElement('div');
+  line.style.color = color;
+  line.textContent = message;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function migrateProgress(text) {
+  const el = document.getElementById('migrate-progress');
+  if (el) el.textContent = text;
+}
+
+async function runSecureMigration() {
+  const btn = document.getElementById('migrate-run-btn');
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+  document.getElementById('migrate-log').innerHTML = '';
+
+  let totalCopied = 0;
+  let totalSkipped = 0;
+  let totalErrors = 0;
+
+  migrateLog('Starting migration — this only reads and copies, nothing is deleted.', 'warn');
+
+  // ---- 1. concours: htmlCode -> concours/{id}/secure/main ----
+  try {
+    migrateProgress('Migrating concours...');
+    migrateLog('--- concours ---');
+    const snap = await db.collection('concours').get();
+    let count = 0;
+    for (const doc of snap.docs) {
+      const data = doc.data();
+      const htmlCode = data.htmlCode;
+      const questionsJson = data.questionsJson;
+      if (!htmlCode && !questionsJson) {
+        migrateLog(`  skip ${doc.id} — no htmlCode and no questionsJson field`, 'warn');
+        totalSkipped++;
+        continue;
+      }
+      try {
+        // Build only the fields that actually exist on this doc, then merge —
+        // merge:true means re-running this later (e.g. after adding a new
+        // exam with only one of the two fields) never wipes out the other.
+        const secureData = {};
+        if (htmlCode) secureData.content = htmlCode;
+        if (questionsJson) secureData.questionsJson = questionsJson;
+        await db.collection('concours').doc(doc.id).collection('secure').doc('main').set(secureData, { merge: true });
+        count++;
+        totalCopied++;
+      } catch (e) {
+        migrateLog(`  ERROR ${doc.id}: ${e.message}`, 'error');
+        totalErrors++;
+      }
+    }
+    migrateLog(`  done — ${count} of ${snap.size} docs copied`, 'success');
+  } catch (e) {
+    migrateLog(`concours migration failed: ${e.message}`, 'error');
+    totalErrors++;
+  }
+
+  // ---- 2. coursapk: courscode -> coursapk/{id}/secure/main ----
+  try {
+    migrateProgress('Migrating coursapk...');
+    migrateLog('--- coursapk ---');
+    const snap = await db.collection('coursapk').get();
+    let count = 0;
+    for (const doc of snap.docs) {
+      const data = doc.data();
+      const courscode = data.courscode;
+      if (!courscode) {
+        migrateLog(`  skip ${doc.id} — no courscode field`, 'warn');
+        totalSkipped++;
+        continue;
+      }
+      try {
+        await db.collection('coursapk').doc(doc.id).collection('secure').doc('main').set({ content: courscode });
+        count++;
+        totalCopied++;
+      } catch (e) {
+        migrateLog(`  ERROR ${doc.id}: ${e.message}`, 'error');
+        totalErrors++;
+      }
+    }
+    migrateLog(`  done — ${count} of ${snap.size} docs copied`, 'success');
+  } catch (e) {
+    migrateLog(`coursapk migration failed: ${e.message}`, 'error');
+    totalErrors++;
+  }
+
+  // ---- 3. coursSVT: contents/{Ar,Fr,Flashcard}.Code -> secure/{variant}.content ----
+  try {
+    migrateProgress('Migrating coursSVT...');
+    migrateLog('--- coursSVT ---');
+    const snap = await db.collection('coursSVT').get();
+    let count = 0;
+    const variants = ['Ar', 'Fr', 'Flashcard'];
+    for (const doc of snap.docs) {
+      for (const variant of variants) {
+        try {
+          const contentSnap = await db.collection('coursSVT').doc(doc.id).collection('contents').doc(variant).get();
+          if (!contentSnap.exists) {
+            migrateLog(`  skip ${doc.id}/${variant} — doc does not exist`, 'warn');
+            totalSkipped++;
+            continue;
+          }
+          const code = contentSnap.data().Code;
+          if (!code) {
+            migrateLog(`  skip ${doc.id}/${variant} — empty Code field`, 'warn');
+            totalSkipped++;
+            continue;
+          }
+          await db.collection('coursSVT').doc(doc.id).collection('secure').doc(variant).set({ content: code });
+          count++;
+          totalCopied++;
+        } catch (e) {
+          migrateLog(`  ERROR ${doc.id}/${variant}: ${e.message}`, 'error');
+          totalErrors++;
+        }
+      }
+    }
+    migrateLog(`  done — ${count} variant docs copied across ${snap.size} coursSVT documents`, 'success');
+  } catch (e) {
+    migrateLog(`coursSVT migration failed: ${e.message}`, 'error');
+    totalErrors++;
+  }
+
+  migrateProgress('Finished.');
+  migrateLog('================================', '');
+  migrateLog(`TOTAL: ${totalCopied} copied, ${totalSkipped} skipped (no content), ${totalErrors} errors`, totalErrors > 0 ? 'error' : 'success');
+  migrateLog('Nothing was deleted. Your original documents are untouched.', 'success');
+  migrateLog('Next step: verify a few documents in Firebase Console under their new "secure" subcollection before doing anything else.', 'warn');
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run Migration';
+  toast(totalErrors > 0 ? `Migration finished with ${totalErrors} errors — check log` : 'Migration finished successfully', totalErrors > 0 ? 'error' : 'success');
+}
+
+
+async function loadLogs() {
+  const container=document.getElementById('logs-content');
+  if(!workerUrl){container.innerHTML='<div class="empty-state"><div class="empty-icon">◌</div><div class="empty-title">Set Worker URL in Settings first</div></div>';return;}
+  container.innerHTML='<div style="padding:20px;color:var(--text-muted);font-size:11px"><span class="spinner-sm"></span>Fetching logs...</div>';
+  try {
+    const resp=await fetch(`${workerUrl}/api/admin/logs`);
+    if(!resp.ok) throw new Error('Worker returned '+resp.status+' — /api/admin/logs endpoint not implemented in worker');
+    const data=await resp.json();
+    if(!data.logs||!data.logs.length){container.innerHTML='<div class="empty-state"><div class="empty-icon">◎</div><div class="empty-title">No logs found</div></div>';return;}
+    container.innerHTML=data.logs.map(log=>`<div class="log-entry">
+      <div class="log-time">${new Date(log.timestamp).toLocaleString('fr-FR')}</div>
+      <div class="log-action"><span class="badge ${log.action==='download'?'badge-purple':'badge-blue'}">${log.action}</span></div>
+      <div class="log-user">${log.userId||'anon'}</div>
+      <div style="font-size:10px;color:var(--text-muted)">${log.examId||''}</div>
+      <div>${log.isPremium?'<span class="badge badge-amber">PRO</span>':'<span class="badge badge-gray">FREE</span>'}</div>
+    </div>`).join('');
+  } catch(e){
+    container.innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Could not fetch logs</div><p style="font-size:10px;margin-top:6px;color:var(--text-soft)">${e.message}</p></div>`;
+  }
+}
+
+// ---- SETTINGS ----
+function saveWorkerUrl() {
+  workerUrl=document.getElementById('worker-url-input').value.trim().replace(/\/$/,'');
+  localStorage.setItem('workerUrl',workerUrl);
+  toast('Worker URL saved','success');
+}
+
+function renderSchema() {
+  const fieldTypes={nom:'string',email:'string',telephone:'string',genre:'string',membership:'"free" | "premium"',downloads:'array',createdAt:'timestamp',exam:'string',category:'string',htmlCode:'string (HTML)',isPremium:'boolean'};
+  document.getElementById('schema-users').innerHTML=REQUIRED_USER_FIELDS.map(f=>`<div class="health-row"><span class="health-key">${f}</span><span class="health-val" style="font-size:9px;color:var(--text-muted)">${fieldTypes[f]||'any'}</span></div>`).join('');
+  document.getElementById('schema-exams').innerHTML=REQUIRED_EXAM_FIELDS.map(f=>`<div class="health-row"><span class="health-key">${f}</span><span class="health-val" style="font-size:9px;color:var(--text-muted)">${fieldTypes[f]||'any'}</span></div>`).join('');
+}
+
+// ---- NAVIGATION ----
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(item=>{if(item.getAttribute('onclick')?.includes(`'${name}'`))item.classList.add('active');});
+  const titles={overview:'Dashboard',health:'Health Check',exams:'Exam Management',categories:'Categories',users:'User Management',premium:'Premium Management',logs:'Access Logs',settings:'Settings',cours:'Cours Management',courssvt:'Cours SVT Management',migrate:'Migrate to Secure Storage'};
+  document.getElementById('topbar-title').textContent=titles[name]||name;
+  if(name==='logs') loadLogs();
+  closeSidebar();
+}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('active');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('active');
+}
+
+function closeModal(id){document.getElementById(id).style.display='none';}
+
+function showConfirm(title,desc,onConfirm) {
+  const overlay=document.createElement('div');
+  overlay.className='confirm-overlay';
+  overlay.innerHTML=`<div class="confirm-box"><div class="confirm-icon">⚠️</div><div class="confirm-title">${title}</div><div class="confirm-desc">${desc}</div><div class="confirm-actions"><button class="btn btn-ghost" id="cc">Cancel</button><button class="btn btn-red" id="co">Confirm</button></div></div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#cc').onclick=()=>overlay.remove();
+  overlay.querySelector('#co').onclick=()=>{overlay.remove();onConfirm();};
+}
+
+function toast(message,type='info') {
+  const container=document.getElementById('toast-container');
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.textContent=message;
+  container.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3000);
+}
+
+// ---- COURS ----
+function esc(s){var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
+
+async function loadCours() {
+  try {
+    var snap = await db.collection('coursapk').get();
+    allCours = snap.docs.map(function(doc){return Object.assign({id:doc.id},doc.data());});
+    renderCoursSubjectFilters();
+    renderCoursTable();
+    updateCoursStats();
+  } catch(e) {
+    var msg = e.code==='permission-denied' ? 'Cours: Permission denied.' : 'Failed to load cours: '+e.message;
+    toast(msg,'error');
+    var tbody = document.getElementById('cours-table');
+    if(tbody) tbody.innerHTML = '<tr class="loading-row"><td colspan="5">'+esc(msg)+'</td></tr>';
+  }
+}
+
+function updateCoursStats() {
+  document.getElementById('cours-stat-total').textContent = allCours.length;
+  document.getElementById('cours-stat-premium').textContent = allCours.filter(function(c){return c.isPremium;}).length;
+  var subs = {};
+  allCours.forEach(function(c){if(c.subject) subs[c.subject]=1;});
+  document.getElementById('cours-stat-subjects').textContent = Object.keys(subs).length;
+}
+
+function renderCoursSubjectFilters() {
+  var container = document.getElementById('cours-subject-filters');
+  if(!container) return;
+  var subjects = [];
+  var seen = {};
+  allCours.forEach(function(c){if(c.subject && !seen[c.subject]){seen[c.subject]=1;subjects.push(c.subject);}});
+  subjects.sort();
+  var html = '<button class="filter-btn '+(activeCoursSub===''?'active':'')+'" onclick="filterCoursBySubject(this)">All</button>';
+  subjects.forEach(function(s){
+    html += '<button class="filter-btn '+(activeCoursSub===s?'active':'')+'" data-sub="'+esc(s)+'" onclick="filterCoursBySubject(this)">'+esc(s)+'</button>';
+  });
+  container.innerHTML = html;
+}
+
+function filterCoursBySubject(btn) {
+  activeCoursSub = btn.dataset.sub || '';
+  document.querySelectorAll('#cours-subject-filters .filter-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderCoursTable();
+}
+
+function filterCoursSearch(val) {
+  activeCoursQ = val.toLowerCase();
+  renderCoursTable();
+}
+
+function renderCoursTable() {
+  var tbody = document.getElementById('cours-table');
+  if(!tbody) return;
+  var list = allCours.filter(function(c){
+    if(activeCoursSub && c.subject !== activeCoursSub) return false;
+    if(activeCoursQ && (c.title||'').toLowerCase().indexOf(activeCoursQ)===-1 && (c.subject||'').toLowerCase().indexOf(activeCoursQ)===-1) return false;
+    return true;
+  });
+  document.getElementById('cours-count').textContent = '('+list.length+')';
+  if(!list.length){tbody.innerHTML='<tr class="loading-row"><td colspan="5">No cours found</td></tr>';return;}
+  var rows = '';
+  list.forEach(function(c){
+    var codeBadge = c.courscode ? '<span class="badge badge-green">Yes</span>' : '<span class="badge badge-gray">Empty</span>';
+    var chk = c.isPremium ? 'checked' : '';
+    rows += '<tr>'
+      +'<td class="td-name">'+esc(c.title||'')+'</td>'
+      +'<td><span class="badge badge-blue">'+esc(c.subject||'')+'</span></td>'
+      +'<td>'+codeBadge+'</td>'
+      +'<td><label class="toggle"><input type="checkbox" '+chk+' data-id="'+esc(c.id)+'" onchange="toggleCoursPremium(this)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></td>'
+      +'<td><div style="display:flex;gap:4px">'
+      +'<button class="btn btn-ghost btn-sm" data-id="'+esc(c.id)+'" onclick="openEditCoursModal(this)">Edit</button>'
+      +'<button class="btn btn-red btn-sm" data-id="'+esc(c.id)+'" onclick="deleteCoursById(this)">Del</button>'
+      +'</div></td></tr>';
+  });
+  tbody.innerHTML = rows;
+}
+
+async function toggleCoursPremium(checkbox) {
+  var id = checkbox.dataset.id;
+  var newVal = checkbox.checked;
+  try {
+    await db.collection('coursapk').doc(id).update({isPremium:newVal});
+    var c = allCours.find(function(x){return x.id===id;});
+    if(c) c.isPremium = newVal;
+    updateCoursStats();
+    toast('Cours '+(newVal?'set to Premium':'set to Free'),'success');
+  } catch(e){checkbox.checked=!newVal;toast('Update failed: '+e.message,'error');}
+}
+
+function openAddCoursModal() {
+  document.getElementById('cours-modal-heading').textContent = 'Add Cours';
+  document.getElementById('cours-modal-id').value = '';
+  document.getElementById('cours-modal-title').value = '';
+  document.getElementById('cours-modal-subject').value = '';
+  document.getElementById('cours-modal-premium').checked = false;
+  document.getElementById('cours-modal-premium-lbl').textContent = 'Free - accessible to all';
+  document.getElementById('cours-modal-code').value = '';
+  document.getElementById('cours-file-status').textContent = '';
+  switchCoursTab('paste');
+  document.getElementById('modal-cours').style.display = 'flex';
+}
+
+async function openEditCoursModal(btn) {
+  var id = btn.dataset.id;
+  var c = allCours.find(function(x){return x.id===id;});
+  if(!c) return;
+  document.getElementById('cours-modal-heading').textContent = 'Edit Cours';
+  document.getElementById('cours-modal-id').value = id;
+  document.getElementById('cours-modal-title').value = c.title||'';
+  document.getElementById('cours-modal-subject').value = c.subject||'';
+  document.getElementById('cours-modal-premium').checked = !!c.isPremium;
+  document.getElementById('cours-modal-premium-lbl').textContent = c.isPremium ? 'Premium - locked' : 'Free - accessible to all';
+  document.getElementById('cours-modal-code').value = 'Loading...';
+  document.getElementById('cours-file-status').textContent = '';
+  switchCoursTab('paste');
+  document.getElementById('modal-cours').style.display = 'flex';
+  // Content lives in the secure subcollection now, not on the parent doc
+  try {
+    var secSnap = await db.collection('coursapk').doc(id).collection('secure').doc('main').get();
+    document.getElementById('cours-modal-code').value = secSnap.exists ? (secSnap.data().content || '') : '';
+  } catch(err) {
+    document.getElementById('cours-modal-code').value = '';
+    toast('Could not load existing content: '+err.message,'error');
+  }
+}
+
+function coursUpdatePremiumLabel() {
+  var checked = document.getElementById('cours-modal-premium').checked;
+  document.getElementById('cours-modal-premium-lbl').textContent = checked ? 'Premium - locked' : 'Free - accessible to all';
+}
+
+async function saveCours() {
+  var id = document.getElementById('cours-modal-id').value;
+  var courscode = document.getElementById('cours-modal-code').value;
+  var data = {
+    title:    document.getElementById('cours-modal-title').value.trim(),
+    subject:  document.getElementById('cours-modal-subject').value.trim(),
+    isPremium:document.getElementById('cours-modal-premium').checked
+  };
+  if(!data.title||!data.subject){toast('Title and subject are required','error');return;}
+  var btn = document.getElementById('cours-save-btn');
+  btn.disabled=true; btn.textContent='Saving...';
+  try {
+    var docId = id;
+    if(id){
+      await db.collection('coursapk').doc(id).update(data);
+    } else {
+      var ref=await db.collection('coursapk').add(data);
+      docId = ref.id;
+    }
+    // Content always goes to the secure subcollection, never the parent doc
+    await db.collection('coursapk').doc(docId).collection('secure').doc('main').set({content: courscode});
+
+    if(id){
+      var idx=allCours.findIndex(function(c){return c.id===id;});
+      if(idx!==-1) allCours[idx]=Object.assign({},allCours[idx],data,{courscode:courscode});
+      toast('Cours updated','success');
+    } else {
+      allCours.push(Object.assign({id:docId},data,{courscode:courscode}));
+      toast('Cours added','success');
+    }
+    closeModal('modal-cours');
+    renderCoursSubjectFilters();
+    renderCoursTable();
+    updateCoursStats();
+  } catch(e){toast('Failed: '+e.message,'error');}
+  btn.disabled=false; btn.textContent='Save Cours';
+}
+
+function deleteCoursById(btn) {
+  var id = btn.dataset.id;
+  var c = allCours.find(function(x){return x.id===id;});
+  var name = c ? (c.title||id) : id;
+  showConfirm('Delete this cours?', '"'+name+'" will be permanently removed.', async function(){
+    try {
+      // Delete the secure content doc first, then the parent
+      try { await db.collection('coursapk').doc(id).collection('secure').doc('main').delete(); } catch(e){}
+      await db.collection('coursapk').doc(id).delete();
+      allCours = allCours.filter(function(x){return x.id!==id;});
+      renderCoursSubjectFilters();
+      renderCoursTable();
+      updateCoursStats();
+      toast('Cours deleted','success');
+    } catch(e){toast('Delete failed: '+e.message,'error');}
+  });
+}
+
+function exportCours() {
+  var rows=[['ID','Title','Subject','isPremium','Has Code']];
+  allCours.forEach(function(c){rows.push([c.id,c.title||'',c.subject||'',c.isPremium||false,!!(c.courscode)]);});
+  downloadCSV(rows,'ispits_cours.csv');
+  toast('CSV exported','success');
+}
+
+function switchCoursTab(tab) {
+  var isPaste = tab==='paste';
+  document.getElementById('ctab-paste-content').style.display  = isPaste ? 'block' : 'none';
+  document.getElementById('ctab-upload-content').style.display = isPaste ? 'none'  : 'block';
+  document.getElementById('ctab-paste').style.background  = isPaste ? 'var(--primary-dim)' : 'var(--surface-2)';
+  document.getElementById('ctab-paste').style.color       = isPaste ? 'var(--primary)'     : 'var(--text-soft)';
+  document.getElementById('ctab-upload').style.background = isPaste ? 'var(--surface-2)'   : 'var(--primary-dim)';
+  document.getElementById('ctab-upload').style.color      = isPaste ? 'var(--text-soft)'   : 'var(--primary)';
+}
+
+function handleCoursFileDrop(e) {
+  e.preventDefault();
+  document.getElementById('cours-dropzone').style.borderColor='var(--border-light)';
+  var file = e.dataTransfer.files[0];
+  if(file) readCoursFile(file);
+}
+
+function handleCoursFileSelect(input) {
+  if(input.files[0]) readCoursFile(input.files[0]);
+}
+
+function readCoursFile(file) {
+  var status = document.getElementById('cours-file-status');
+  status.textContent = 'Reading '+file.name+'...';
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    document.getElementById('cours-modal-code').value = ev.target.result;
+    status.textContent = 'Loaded: '+file.name+' ('+(file.size/1024).toFixed(1)+' KB)';
+    status.style.color = 'var(--green)';
+    switchCoursTab('paste');
+  };
+  reader.onerror = function(){
+    status.textContent = 'Failed to read file';
+    status.style.color = 'var(--red)';
+  };
+  reader.readAsText(file,'utf-8');
+}
+// ===== APK VERSION BOMB =====
+async function loadApkVersion() {
+  try {
+    var snap = await db.collection('apkversion').doc('main').get();
+    var v = snap.exists ? (snap.data().version || '0') : '0';
+    document.getElementById('apk-version').textContent = v;
+  } catch(e) { document.getElementById('apk-version').textContent = '?'; }
+}
+
+async function bombVersion() {
+  var btn = event.currentTarget;
+  btn.disabled = true; btn.textContent = '⏳';
+  try {
+    var snap = await db.collection('apkversion').doc('main').get();
+    var current = snap.exists ? parseFloat(snap.data().version || '0') : 0;
+    var next = String(Math.round(current) + 1);
+    await db.collection('apkversion').doc('main').set({version: next}, {merge: true});
+    document.getElementById('apk-version').textContent = next;
+    toast('App version bumped to ' + next + ' 💣', 'success');
+  } catch(e) { toast('Bomb failed: ' + e.message, 'error'); }
+  btn.disabled = false; btn.textContent = '💣 Bomb';
+}
+
+
+var allCoursSVT = [];
+
+async function loadCoursSVT() {
+  try {
+    var snap = await db.collection('coursSVT').get();
+    allCoursSVT = snap.docs.map(function(doc){ return Object.assign({id:doc.id}, doc.data()); });
+    renderCoursSVTCards();
+    updateCoursSVTStats();
+  } catch(e) {
+    var msg = e.code==='permission-denied' ? 'Cours SVT: Permission denied.' : 'Failed to load coursSVT: '+e.message;
+    toast(msg,'error');
+    document.getElementById('csvt-cards-grid').innerHTML = '<div style="color:var(--red);padding:20px;font-size:11px">⚠ '+esc(msg)+'</div>';
+  }
+}
+
+function updateCoursSVTStats() {
+  var total = allCoursSVT.length;
+  var premium = allCoursSVT.filter(function(c){return c.isPremium;}).length;
+  document.getElementById('csvt-stat-total').textContent = total;
+  document.getElementById('csvt-stat-premium').textContent = premium;
+  document.getElementById('csvt-stat-free').textContent = total - premium;
+}
+
+function renderCoursSVTCards() {
+  var grid = document.getElementById('csvt-cards-grid');
+  if(!grid) return;
+  if(!allCoursSVT.length){
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📚</div><div class="empty-title">No cours SVT yet</div><p style="font-size:10px;margin-top:6px">Click "+ Add Cours SVT" to get started</p></div>';
+    return;
+  }
+  grid.innerHTML = allCoursSVT.map(function(c){
+    var premBadge = c.isPremium
+      ? '<span class="badge badge-amber">Premium</span>'
+      : '<span class="badge badge-green">Free</span>';
+    var premChk = c.isPremium ? 'checked' : '';
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'
+      +'  <div style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text);flex:1;word-break:break-word">'+esc(c.Title||c.title||'Untitled')+'</div>'
+      +'  '+premBadge
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-soft)">'
+      +'  <label class="toggle" title="Toggle Premium"><input type="checkbox" '+premChk+' data-id="'+esc(c.id)+'" onchange="toggleCoursSVTPremium(this)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>'
+      +'  <span id="csvt-prem-lbl-'+esc(c.id)+'">'+( c.isPremium ? 'Premium' : 'Free' )+'</span>'
+      +'</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+      +'  <button class="btn btn-ghost btn-sm" onclick="openCsvtCodeModal(\''+esc(c.id)+'\',\'Ar\')">📝 Ar</button>'
+      +'  <button class="btn btn-ghost btn-sm" onclick="openCsvtCodeModal(\''+esc(c.id)+'\',\'Flashcard\')">🗂 Flashcard</button>'
+      +'  <button class="btn btn-ghost btn-sm" onclick="openCsvtCodeModal(\''+esc(c.id)+'\',\'Fr\')">📄 Fr</button>'
+      +'</div>'
+      +'<div style="display:flex;gap:6px;margin-top:2px">'
+      +'  <button class="btn btn-ghost btn-sm" onclick="openEditCoursSVTModal(\''+esc(c.id)+'\')">Edit</button>'
+      +'  <button class="btn btn-red btn-sm" onclick="deleteCoursSVT(\''+esc(c.id)+'\')">Delete</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// ---- Add / Edit modal ----
+function openAddCoursSVTModal() {
+  document.getElementById('csvt-add-heading').textContent = 'Add Cours SVT';
+  document.getElementById('csvt-add-id').value = '';
+  document.getElementById('csvt-add-title').value = '';
+  document.getElementById('csvt-add-premium').checked = false;
+  document.getElementById('csvt-add-premium-lbl').textContent = 'Free - accessible to all';
+  document.getElementById('modal-csvt-add').style.display = 'flex';
+}
+
+function openEditCoursSVTModal(id) {
+  var c = allCoursSVT.find(function(x){return x.id===id;}); if(!c) return;
+  document.getElementById('csvt-add-heading').textContent = 'Edit Cours SVT';
+  document.getElementById('csvt-add-id').value = id;
+  document.getElementById('csvt-add-title').value = c.Title || c.title || '';
+  document.getElementById('csvt-add-premium').checked = !!c.isPremium;
+  document.getElementById('csvt-add-premium-lbl').textContent = c.isPremium ? 'Premium - locked' : 'Free - accessible to all';
+  document.getElementById('modal-csvt-add').style.display = 'flex';
+}
+
+function csvtUpdatePremiumLabel() {
+  var chk = document.getElementById('csvt-add-premium').checked;
+  document.getElementById('csvt-add-premium-lbl').textContent = chk ? 'Premium - locked' : 'Free - accessible to all';
+}
+
+async function saveCoursSVT() {
+  var id    = document.getElementById('csvt-add-id').value.trim();
+  var title = document.getElementById('csvt-add-title').value.trim();
+  var isPremium = document.getElementById('csvt-add-premium').checked;
+  if(!title){ toast('Title is required','error'); return; }
+  var btn = document.getElementById('csvt-add-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    if(id) {
+      // Edit existing
+      await db.collection('coursSVT').doc(id).update({Title:title, isPremium:isPremium});
+      var idx = allCoursSVT.findIndex(function(c){return c.id===id;});
+      if(idx!==-1){ allCoursSVT[idx].Title=title; allCoursSVT[idx].isPremium=isPremium; }
+      toast('Cours SVT updated','success');
+    } else {
+      // Add new with subcollections
+      var ref = await db.collection('coursSVT').add({Title:title, isPremium:isPremium});
+      // Pre-create the secure subcollection with three empty docs: Ar, Flashcard, Fr
+      var batch = db.batch();
+      ['Ar','Flashcard','Fr'].forEach(function(tab){
+        batch.set(ref.collection('secure').doc(tab), {content: ''});
+      });
+      await batch.commit();
+      allCoursSVT.push({id:ref.id, Title:title, isPremium:isPremium});
+      toast('Cours SVT added','success');
+    }
+    closeModal('modal-csvt-add');
+    renderCoursSVTCards();
+    updateCoursSVTStats();
+  } catch(e){ toast('Failed: '+e.message,'error'); }
+  btn.disabled=false; btn.textContent='Save';
+}
+
+async function deleteCoursSVT(id) {
+  var c = allCoursSVT.find(function(x){return x.id===id;});
+  var name = c ? (c.Title||c.title||id) : id;
+  showConfirm('Delete "'+name+'"?', 'This will permanently remove this cours SVT from Firestore.', async function(){
+    try {
+      // Delete secure subcollection docs first
+      var secSnap = await db.collection('coursSVT').doc(id).collection('secure').get();
+      var batch = db.batch();
+      secSnap.docs.forEach(function(d){ batch.delete(d.ref); });
+      await batch.commit();
+      // Also clean up any leftover legacy "contents" docs from before migration
+      try {
+        var contSnap = await db.collection('coursSVT').doc(id).collection('contents').get();
+        var batch2 = db.batch();
+        contSnap.docs.forEach(function(d){ batch2.delete(d.ref); });
+        await batch2.commit();
+      } catch(e){}
+      await db.collection('coursSVT').doc(id).delete();
+      allCoursSVT = allCoursSVT.filter(function(x){return x.id!==id;});
+      renderCoursSVTCards();
+      updateCoursSVTStats();
+      toast('Deleted','success');
+    } catch(e){ toast('Delete failed: '+e.message,'error'); }
+  });
+}
+
+async function toggleCoursSVTPremium(checkbox) {
+  var id = checkbox.dataset.id;
+  var newVal = checkbox.checked;
+  try {
+    await db.collection('coursSVT').doc(id).update({isPremium:newVal});
+    var c = allCoursSVT.find(function(x){return x.id===id;});
+    if(c) c.isPremium = newVal;
+    var lbl = document.getElementById('csvt-prem-lbl-'+id);
+    if(lbl) lbl.textContent = newVal ? 'Premium' : 'Free';
+    updateCoursSVTStats();
+    toast('Updated','success');
+  } catch(e){ checkbox.checked=!newVal; toast('Failed: '+e.message,'error'); }
+}
+
+// ---- Code modal ----
+async function openCsvtCodeModal(docId, tab) {
+  document.getElementById('csvt-code-doc-id').value = docId;
+  document.getElementById('csvt-code-tab').value = tab;
+  var c = allCoursSVT.find(function(x){return x.id===docId;});
+  document.getElementById('csvt-code-heading').textContent = (c ? esc(c.Title||c.title) : docId);
+  document.getElementById('csvt-code-tab-label').textContent = '— ' + tab;
+  document.getElementById('csvt-code-area').value = 'Loading...';
+  document.getElementById('csvt-file-status').textContent = '';
+  switchCsvtTab('paste');
+  // Content lives in the secure subcollection now, not in "contents"
+  try {
+    var snap = await db.collection('coursSVT').doc(docId).collection('secure').doc(tab).get();
+    document.getElementById('csvt-code-area').value = snap.exists ? (snap.data().content || '') : '';
+  } catch(e){
+    document.getElementById('csvt-code-area').value = '';
+  }
+  document.getElementById('modal-csvt-code').style.display = 'flex';
+}
+
+async function saveCoursSVTCode() {
+  var docId = document.getElementById('csvt-code-doc-id').value;
+  var tab   = document.getElementById('csvt-code-tab').value;
+  var code  = document.getElementById('csvt-code-area').value;
+  var btn = document.getElementById('csvt-code-save-btn');
+  btn.disabled=true; btn.textContent='Saving...';
+  try {
+    // Content always goes to the secure subcollection now, never "contents"
+    await db.collection('coursSVT').doc(docId).collection('secure').doc(tab).set({content:code});
+    toast('Code saved to '+tab,'success');
+    closeModal('modal-csvt-code');
+  } catch(e){ toast('Failed: '+e.message,'error'); }
+  btn.disabled=false; btn.textContent='Save Code';
+}
+
+function switchCsvtTab(tab) {
+  var isPaste = tab==='paste';
+  document.getElementById('csvt-paste-content').style.display  = isPaste ? 'block' : 'none';
+  document.getElementById('csvt-upload-content').style.display = isPaste ? 'none'  : 'block';
+  document.getElementById('csvt-ctab-paste').style.background  = isPaste ? 'var(--primary-dim)' : 'var(--surface-2)';
+  document.getElementById('csvt-ctab-paste').style.color       = isPaste ? 'var(--primary)'     : 'var(--text-soft)';
+  document.getElementById('csvt-ctab-upload').style.background = isPaste ? 'var(--surface-2)'   : 'var(--primary-dim)';
+  document.getElementById('csvt-ctab-upload').style.color      = isPaste ? 'var(--text-soft)'   : 'var(--primary)';
+}
+
+function handleCsvtFileDrop(e) {
+  e.preventDefault();
+  document.getElementById('csvt-dropzone').style.borderColor='var(--border-light)';
+  var file = e.dataTransfer.files[0];
+  if(file) readCsvtFile(file);
+}
+function handleCsvtFileSelect(input) {
+  if(input.files[0]) readCsvtFile(input.files[0]);
+}
+function readCsvtFile(file) {
+  var status = document.getElementById('csvt-file-status');
+  status.textContent = 'Reading '+file.name+'...';
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    document.getElementById('csvt-code-area').value = ev.target.result;
+    status.textContent = 'Loaded: '+file.name+' ('+(file.size/1024).toFixed(1)+' KB)';
+    status.style.color = 'var(--green)';
+    switchCsvtTab('paste');
+  };
+  reader.onerror = function(){
+    status.textContent = 'Failed to read file';
+    status.style.color = 'var(--red)';
+  };
+  reader.readAsText(file,'utf-8');
+}
+
+</script>
+</body>
+</html>
